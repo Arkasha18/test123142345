@@ -1,0 +1,35 @@
+#cloud-config
+ssh_pwauth: no
+users:
+  - name: cloud-user
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCzQyRvShrWDvWCKBClyRJXiXjYOQrb8ClfrszIVoGscCy9MLVJOxk7TIFdyhcH5/OCxiez7kOSFn5T7GfrI+rAl50zm0zCnZROwh9l11rL2Ncl5LgNtkxGJCWR04v8+UP38l4M2AB1I1YE5kjw+9gH2w1O6BCvpPpvItUZ+tW+FceFpYyJgr0BiDH4jmTGKWElKHxx+/n6uuUI0yaXxz/bQ1/OfnV/5Lb6IuJKlbBaZNJLlum4G+AdAu6hQf7dAJD8h4spF/gHCVhpkBsNmqsfvCYQv4bgH1wAMzL3JgiWIoqBj+uFnUbXu7lR0iQkjhesznJ6Z1V4frsH4bdRRPMYD/Njx7aJuxKSBLCRgrLX4m/wCxwB1bTWSLgLMJRhua2QiftwhsfODqGeO/2sP7k4S5l8tlbNSvRh+MS7yA09Fyt04oJ/3XPng9hUgzilvEP+NtApt31svp5R9uaZU7z0prQDj2ZOgX3zxgmEuIBPY2P3Aq4zkYBt1z+wDpTDekU9xo+mz7jVfkgBovVCAR+eN9ZVPpacbOTxYAjuJH1mWpEbqvyrO4Qjh8LF/cGf3HBx1jMZipqsiG+8mUhowO8Wma8hAtn8aZlmxAO8/o2RSwzD2k0hk/iu3fOAgLuSuioxsvwmjKr4g8YDBJ+FWn5Yw3UG2BbIQ7ceG3LkBl10mw== root@admin.ru.net
+
+packages:
+- docker.io
+
+write_files:
+  - path: /root/.config/yandex-cloud/config.yaml
+    permissions: '0600'
+    content: |
+      current: default
+      profiles:
+        default:
+          token: y0_AgAAAAB1X0nFAATuwQAAAAECI2M4AAB5fx0NAW9HmY3LCTfcPzZUjTunLQ
+          cloud-id: b1glqf9amvcm5fe9ge2f
+          folder-id: b1g3d1fn1u6i8bcif09p
+  - path: /var/lib/cloud/scripts/per-boot/app.sh
+    permissions: '0555'
+    content: |
+      #!/bin/bash
+      #Run APP
+      if [ $(docker ps | grep appli | wc -l) -eq 1 ]; then 
+      docker ps | grep metrics 
+      else 
+      curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+      yc container registry configure-docker
+      #ID регистри берется с созданного тераформом по хорошему через terraform_remote_state
+      #docker run --name appli --network=host --pid=host --restart=always -d cr.yandex/[id_registry]/app:hello
+      fi
